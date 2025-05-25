@@ -2,17 +2,21 @@
 #define CLI_H
 
 #include "cpu.h"
+#include "instructions.h"
 
 typedef struct 
 {
-	int opcode;
+	Operation opcode;
 	int operand1;
-	int operand2;
 } Instruction;
 
 void trim(char* str);
+void deleteEnter(char* str);
+char* parseWord(char* str, const char* delimeters);
+float parseNum(char* str);
+
 void parseInstruction(CPU* cpu);
-int convertToRegister(char* str);
-int convertToOperation(char* str);
+Register convertToRegister(char* str);
+Operation convertToOperation(char* str);
 
 #endif

@@ -1,6 +1,5 @@
 #include "cpu.h"
 #include "instructions.h"
-#include "registers.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -26,6 +25,9 @@ void execute(CPU* cpu)
 			return;
 		case MOV:
 			handleMov(cpu);
+			break;
+		case CLR:
+			handleClr(cpu);
 			break;
 		case ADD:
 			handleAdd(cpu);

@@ -18,7 +18,7 @@ ifeq ($(MODE), release)
 endif
 
 
-objects =  $(OUT_DIR)/main.o $(OUT_DIR)/cpu.o $(OUT_DIR)/instructions.o $(OUT_DIR)/cli.o $(OUT_DIR)/registers.o $(OUT_DIR)/operations.o $(OUT_DIR)/file.o
+objects =  $(OUT_DIR)/main.o $(OUT_DIR)/cpu.o $(OUT_DIR)/instructions.o $(OUT_DIR)/cli.o $(OUT_DIR)/operations.o $(OUT_DIR)/file.o
 
 prog = $(OUT_DIR)/curse
 

@@ -1,15 +1,24 @@
 #include "instructions.h"
+#include "cpu.h"
 #include <stdio.h>
 #include <limits.h>
+#include <stdint.h>
 
-int floatToFixed(float f) 
-{
-    return (int)(f * (1 << 7));
+#define FRACTIONAL_LEN 7
+
+int floatToFixed(float num) 
+{    
+    return (int)(num * (1 << FRACTIONAL_LEN)); 
 }
 
-float fixedToFloat(int f) 
-{
-    return (float)f / (1 << 7);
+float fixedToFloat(int num) 
+{	
+	return (float)num / (1 << FRACTIONAL_LEN);
+}
+
+double fixed64ToFloat(int64_t num) 
+{	
+	return (double)num / (1 << (FRACTIONAL_LEN << 1));
 }
 
 void addOp(int* num1, int num2) 
@@ -30,6 +39,31 @@ void addOp(int* num1, int num2)
 	p &= p << 8;
 
 	g |= p & g << 16;
+		
+	*num1 ^= (g << 1);
+}
+
+void addOp64(int64_t* num1, int64_t num2) 
+{    
+	int64_t g = *num1 & num2;     
+	int64_t p = *num1 ^= num2;      
+
+	g |= p & (g << 1);
+	p &= (p << 1);
+
+	g |= p & (g << 2);
+	p &= p << 2;
+
+	g |= p & (g << 4);
+	p &= p << 4;
+
+	g |= p & (g << 8);
+	p &= p << 8;
+
+	g |= p & g << 16;
+	p &= p << 16;
+	
+	g |= p & g << 32;
 		
 	*num1 ^= (g << 1);
 }

@@ -5,7 +5,8 @@
 
 typedef enum 
 {
-	HELP = 1,
+	INVALID_OP = -1,
+	HELP,
 	STAT,
     END,
     PRINT,
@@ -15,11 +16,12 @@ typedef enum
     SUB,
     MUL,
     DIV
-} Operations;
+} Operation;
 
 void handleHelp(CPU *cpu);
 void handleStat(CPU *cpu);
 void handlePrint(CPU *cpu);
+void handleClr(CPU* cpu);
 void handleMov(CPU *cpu);
 void handleAdd(CPU *cpu);
 void handleSub(CPU *cpu);

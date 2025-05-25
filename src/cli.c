@@ -1,6 +1,5 @@
 #include "cli.h"
 #include "instructions.h"
-#include "registers.h"
 #include "operations.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,182 +30,215 @@ void trim(char* str)
     }
 }
 
+void deleteEnter(char* str)
+{
+	char* end;
+	
+	end = strchr(str, '\n');
+	if (end != NULL)
+	{
+		*end = '\0';
+	}
+}
+
+char* parseWord(char* str, const char* delimeters)
+{
+	char* word = strtok(str, delimeters);
+	if (word == NULL) 
+	{
+		printf("\nMissing operation or operand\n");
+		printf("For instructions' list print \"HELP\"\n\n");
+	}
+	
+	return word;
+}
+
+float parseNum(char* str)
+{
+	char* numEnd;
+	float value = strtof(str, &numEnd);
+	if(*numEnd != 0)
+	{
+		printf("\nThe second operand of operation must be number\n");
+		printf("For instructions' list print \"HELP\"\n\n");
+	}
+	
+	return value;
+}
+
 void parseInstruction(CPU* cpu) 
 {
     char input[MAX_LEN];
-    char* end;
-    char* token;
-    char* operation;
-    Instruction instruction;
+    char* word;
+    Instruction instruction = {0};
     int temp;
     char success;
 
 	do
 	{
 		success = 0;
+		
 		if (fgets(input, sizeof(input), stdin) == NULL) 
 		{
 			perror("Error in getting instruction");
 			exit(EXIT_FAILURE);
 		}
+		deleteEnter(input);
 
-		end = strchr(input, '\n');
-		if (end != NULL)
+		if((word = parseWord(input, " ")) == NULL)
 		{
-			*end = '\0';
-		}
-
-		operation = strtok(input, " ");
-		if (operation == NULL) 
-		{
-			printf("\nWrong input. No operation was provided\n");
-			printf("For instructions' list print \"HELP\"\n\n");
 			continue;
 		}
 		
-		instruction.opcode = convertToOperation(operation);
-		if(instruction.opcode == 0)
-		{
-			printf("\nUnknown operation \"%s\"\n", operation);
-			printf("For operations' list print \"HELP\"\n\n");
-			continue;
-		}
-
+		instruction.opcode = convertToOperation(word);
 		switch(instruction.opcode)
 		{
 			case HELP:
-				token = strtok(NULL, "\0");
-				if (token != NULL) 
-				{	
-					printf("\nOperation \"%s\" can't contain any operands\n", operation);
-					printf("For operations' list print \"HELP\"\n\n");
+				if((word = parseWord(NULL, "\0")) == NULL)
+				{
 					break;
 				}
 				//printHelp();
 				success = 1;
 				break;
 			case STAT:
-				token = strtok(NULL, "\0");
-				if (token != NULL) 
-				{	
-					printf("\nOperation \"%s\" can't contain any operands\n", operation);
-					printf("For instructions' list print \"HELP\"\n\n");
+				if((word = parseWord(NULL, "\0")) == NULL)
+				{
 					break;
 				}
 				//printStat();
 				success = 1;
 				break;
 			case END:
-				token = strtok(NULL, "\0");
-				if (token != NULL) 
-				{	
-					printf("\nOperation \"%s\" can't contain any operands\n", operation);
-					printf("For instructions' list print \"HELP\"\n\n");
+				if((word = parseWord(NULL, "\0")) == NULL)
+				{
 					break;
 				}
 				exit(EXIT_SUCCESS);
 			case PRINT:
-				token = strtok(NULL, "\0");
-				if (token == NULL) 
-				{	
-					printf("\nOperation \"%s\" contains one operand\n", operation);
-					printf("For instructions' list print \"HELP\"\n\n");
+			case CLR:
+				if((word = parseWord(NULL, "\0")) == NULL)
+				{
 					break;
 				}
-				trim(token);
+				trim(word);
 				
-				instruction.operand1 = convertToRegister(token);
+				cpu->memory[cpu->lastInstruction++] = instruction.opcode;
+				cpu->memory[cpu->lastInstruction++] = convertToRegister(word);
+				
 				success = 1;
 				break;
 			case MOV:
-				token = strtok(NULL, ",");
-				if (token == NULL) 
+				if((word = parseWord(NULL, ",")) == NULL)
 				{
-					printf("\nOperation \"%s\" must be written in this way: %s register, number\n", operation, operation);
-					printf("For instructions' list print \"HELP\"\n\n");
 					break;
 				}
-				trim(token);
+				trim(word);
 				
-				temp = convertToRegister(token);
-				if(temp == 0)
+				if((temp = convertToRegister(word)) == INVALID_REG)
 				{
-					printf("\nThe first operand of operation \"%s\" must be register\n", operation);
-					printf("For registers' list print \"HELP\"\n\n");
 					break;
 				}
 				instruction.operand1 = temp;
 				
-				token = strtok(NULL, "\0");
-				if (!token) 
-				{					
-					printf("\nOperation \"%s\" must be written in this way: %s register, number\n", operation, operation);
-					printf("For instructions' list print \"HELP\"\n\n");
+				if((word = parseWord(NULL, "\0")) == NULL)
+				{
 					break;
 				}
-				trim(token);
+				trim(word);
 				
-				temp = atof(token);
+				float value = parseNum(word);
 				if(errno != 0)
 				{
-					printf("\nThe second operand of operation \"%s\" must be number\n", operation);
-					printf("For instructions' list print \"HELP\"\n\n");
 					break;
-				}
-				instruction.operand2 = floatToFixed(temp);
+				} 
+				
+				cpu->memory[cpu->lastInstruction++] = instruction.opcode;
+				cpu->memory[cpu->lastInstruction++] = instruction.operand1;
+				cpu->memory[cpu->lastInstruction++] = floatToFixed(value);
+				
 				success = 1;
 				break;
 			case ADD:
 			case SUB:
 			case MUL:
 			case DIV:
-				token = strtok(NULL, ",");
-				if (token == NULL) 
+				if((word = parseWord(NULL, ",")) == NULL)
 				{
-					printf("\nOperation \"%s\" must be written in this way: %s register, register\n", operation, operation);
-					printf("For instructions' list print \"HELP\"\n\n");
 					break;
 				}
-				trim(token);
+				trim(word);
 				
-				temp = convertToRegister(token);
-				if(temp == 0)
+				if((temp = convertToRegister(word)) == INVALID_REG)
 				{
-					printf("\nThe first operand of instruction \"%s\" must be register\n", token);
-					printf("For registers' list print \"HELP\"\n\n");
 					break;
 				}
 				instruction.operand1 = temp;
 				
-				token = strtok(NULL, "\0");
-				if (!token) 
-				{					
-					printf("\nOperation \"%s\" must be written in this way: %s register, register\n", operation, operation);
-					printf("For instructions' list print \"HELP\"\n\n");
-					break;
-				}
-				trim(token);
-				
-				temp = convertToRegister(token);
-				if(temp == 0)
+				if((word = parseWord(NULL, "\0")) == NULL)
 				{
-					printf("\nThe second operand of instruction \"%s\" must be register\n", token);
-					printf("For registers' list print \"HELP\"\n\n");
 					break;
 				}
-				instruction.operand2 = temp;
+				trim(word);
+				
+				if((temp = convertToRegister(word)) == INVALID_REG)
+				{
+					break;
+				}
+				cpu->memory[cpu->lastInstruction++] = instruction.opcode;
+				cpu->memory[cpu->lastInstruction++] = instruction.operand1;
+				cpu->memory[cpu->lastInstruction++] = temp;
 				
 				success = 1;
+				break;
+			default:
 				break;
 		}	
 	} while(success == 0);
 	
-	cpu->memory[cpu->lastInstruction++] = instruction.opcode;
-	cpu->memory[cpu->lastInstruction++] = instruction.operand1;
-	cpu->memory[cpu->lastInstruction++] = instruction.operand2;
 }
 
-int convertToRegister(char* str)
+Register convertToRegister(char* str)
+{
+	char* start = str;
+	
+	while (*str) 
+	{
+        *str = toupper(*str);
+        ++str;
+    }
+    str = start;
+	
+	if (strcmp(str, "RAX") == 0) 
+	{
+		return RAX;
+    }
+    else if (strcmp(str, "RBX") == 0) 
+    {
+		return RBX;
+    }
+    else if (strcmp(str, "RCX") == 0) 
+    {
+		return RCX;
+    }
+    else if (strcmp(str, "RDX") == 0) 
+    {
+		return RDX;
+    }
+     else if (strcmp(str, "RFX") == 0) 
+    {
+		return RFX;
+    }
+    else
+    {
+		printf("Unknown register \"%s\"\n", str);
+		printf("For registers' list print \"HELP\"\n\n");
+	}
+
+    return INVALID_REG;
+}
+
+Operation convertToOperation(char* str)
 {
 	char* start = str;
 	
@@ -218,37 +250,9 @@ int convertToRegister(char* str)
     
     str = start;
 	
-	if (strcmp(str, "REGA") == 0) 
+	if (strcmp(str, "HELP") == 0) 
 	{
-		return REGA;
-    }
-    else if (strcmp(str, "REGB") == 0) 
-    {
-		return REGB;
-    }
-    else if (strcmp(str, "REGR") == 0) 
-    {
-		return REGR;
-    }
-
-    return 0;
-}
-
-int convertToOperation(char* str)
-{
-	char* start = str;
-	
-	while (*str) 
-	{
-        *str = toupper(*str);
-        ++str;
-    }
-    
-    str = start;
-	
-	if (strcmp(str, "END") == 0) 
-	{
-		return END;
+		return HELP;
     }
     else if (strcmp(str, "STAT") == 0) 
     {
@@ -261,6 +265,10 @@ int convertToOperation(char* str)
     else if (strcmp(str, "PRINT") == 0) 
     {
 		return PRINT;
+    }
+    else if (strcmp(str, "CLR") == 0) 
+    {
+		return CLR;
     }
     else if (strcmp(str, "MOV") == 0) 
     {
@@ -282,6 +290,11 @@ int convertToOperation(char* str)
     {
         return DIV;
     }
+    else
+    {
+		printf("Unknown operation \"%s\"\n", str);
+		printf("For instructions' list print \"HELP\"\n\n");
+	}
 
-    return 0;
+    return INVALID_OP;
 }
