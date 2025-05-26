@@ -13,7 +13,7 @@ typedef struct
 void trim(char* str);
 void deleteEnter(char* str);
 char* parseWord(char* str, const char* delimeters);
-float parseNum(char* str);
+double parseNum(char* str);
 
 void parseInstruction(CPU* cpu);
 Register convertToRegister(char* str);

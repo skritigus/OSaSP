@@ -2,24 +2,14 @@
 #define CPU_H
 
 #include <stdint.h>
+#include "register.h"
 
-#define REGISTER_COUNT 5
+#define REGISTER_COUNT 4
 #define MEMORY_SIZE 256
 
-typedef enum 
+typedef struct CPU
 {
-	INVALID_REG = -1,
-    RAX,
-    RBX,
-    RCX,
-	RDX,
-    RFX
-} Register;
-
-typedef struct 
-{
-    int registers[REGISTER_COUNT];
-    int64_t RCX;
+    Reg64 registers[REGISTER_COUNT];
     int memory[MEMORY_SIZE];
     int lastInstruction;
     int currentInstruction;

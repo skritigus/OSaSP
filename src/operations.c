@@ -1,27 +1,25 @@
-#include "instructions.h"
+#include "operations.h"
 #include "cpu.h"
 #include <stdio.h>
 #include <limits.h>
 #include <stdint.h>
 
-#define FRACTIONAL_LEN 7
-
-int floatToFixed(float num) 
+int32_t floatToFixed(double num) 
 {    
-    return (int)(num * (1 << FRACTIONAL_LEN)); 
+    return (int32_t)(num * (1 << FRACTIONAL_LEN)); 
 }
 
-float fixedToFloat(int num) 
+float fixedToFloat(int32_t num) 
 {	
 	return (float)num / (1 << FRACTIONAL_LEN);
 }
 
 double fixed64ToFloat(int64_t num) 
 {	
-	return (double)num / (1 << (FRACTIONAL_LEN << 1));
+	return (double)num / (1 << FRACTIONAL_LEN);
 }
 
-void addOp(int* num1, int num2) 
+void addOp32(int32_t* num1, int32_t num2) 
 {    
 	int g = *num1 & num2;     
 	int p = *num1 ^= num2;      
@@ -98,8 +96,8 @@ int divOp(int dividend, int divisor)
     return negative ? -(int)quotient : (int)quotient;
 } 
  
-void convertSign(int* num)
+void convertSign(int64_t* num)
 {
 	*num = ~(*num);
-	addOp(num, 1);
+	addOp64(num, 1);
 }

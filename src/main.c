@@ -4,9 +4,8 @@
 #include "cli.h"
 
 // TODO:
-// 0. 64-bit and 32-bir REGS
-// 1. MOV 64-bit
-// 2. MOV REG
+// 1. MOV REG
+// 2. MUL 32 ONLY
 // 3. PRINT NOT CPU 
 // 4. DIV
 // 5. OTHER ADD

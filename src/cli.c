@@ -53,10 +53,10 @@ char* parseWord(char* str, const char* delimeters)
 	return word;
 }
 
-float parseNum(char* str)
+double parseNum(char* str)
 {
 	char* numEnd;
-	float value = strtof(str, &numEnd);
+	double value = strtod(str, &numEnd);
 	if(*numEnd != 0)
 	{
 		printf("\nThe second operand of operation must be number\n");
@@ -110,7 +110,7 @@ void parseInstruction(CPU* cpu)
 				success = 1;
 				break;
 			case END:
-				if((word = parseWord(NULL, "\0")) == NULL)
+				if((word = parseWord(NULL, "\0")) != NULL)
 				{
 					break;
 				}
@@ -147,7 +147,7 @@ void parseInstruction(CPU* cpu)
 				}
 				trim(word);
 				
-				float value = parseNum(word);
+				double value = parseNum(word);
 				if(errno != 0)
 				{
 					break;
@@ -225,9 +225,37 @@ Register convertToRegister(char* str)
     {
 		return RDX;
     }
-     else if (strcmp(str, "RFX") == 0) 
+    else if (strcmp(str, "RAH") == 0) 
     {
-		return RFX;
+		return RAH;
+    }
+    else if (strcmp(str, "RBH") == 0) 
+    {
+		return RBH;
+    }
+    else if (strcmp(str, "RCH") == 0) 
+    {
+		return RCH;
+    }
+    else if (strcmp(str, "RDH") == 0) 
+    {
+		return RDH;
+    }
+    else if (strcmp(str, "RAL") == 0) 
+    {
+		return RAL;
+    }
+    else if (strcmp(str, "RBL") == 0) 
+    {
+		return RBL;
+    }
+    else if (strcmp(str, "RCL") == 0) 
+    {
+		return RCL;
+    }
+    else if (strcmp(str, "RDL") == 0) 
+    {
+		return RDL;
     }
     else
     {
