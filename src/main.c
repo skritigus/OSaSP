@@ -4,7 +4,6 @@
 #include "cli.h"
 
 // TODO:
-// 3. PRINT NOT CPU 
 // 4. DIV
 // 5. PARSE END, STAT
 // 5. OTHER ADD

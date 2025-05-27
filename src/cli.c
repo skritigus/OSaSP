@@ -118,6 +118,17 @@ void parseInstruction(CPU* cpu)
 				}
 				exit(EXIT_SUCCESS);
 			case PRINT:
+				if((word = parseWord(NULL, "\0")) == NULL)
+				{
+					break;
+				}
+				
+				if((instruction.operand1 = convertToRegister(word)) == INVALID_REG)
+				{
+					break;
+				}
+				printReg(cpu, instruction.operand1);
+				break;
 			case CLR:
 				if((word = parseWord(NULL, "\0")) == NULL)
 				{
@@ -166,7 +177,6 @@ void parseInstruction(CPU* cpu)
 			case ADD:
 			case SUB:
 			case MUL:
-			case DIV:
 				if((word = parseWord(NULL, ",")) == NULL)
 				{
 					break;
@@ -189,14 +199,50 @@ void parseInstruction(CPU* cpu)
 				
 				if((instruction.operand2 < 4 || instruction.operand1 < 4) && ((instruction.operand2 > 3 || instruction.operand1 > 3)))
 				{
-					printf("\nError. Differnt register size\n");
+					printf("\nError. Different register size\n");
 					printf("For instructions' list print \"HELP\"\n\n");
+					break;
 				}
 				
 				if(instruction.opcode == MUL && instruction.operand1 < 4)
 				{
 					printf("\nError. You can multiply only 32-bit registers\n");
 					printf("For instructions' list print \"HELP\"\n\n");
+					break;
+				}
+				
+				cpu->memory[cpu->lastInstruction++] = instruction.opcode;
+				cpu->memory[cpu->lastInstruction++] = instruction.operand1;
+				cpu->memory[cpu->lastInstruction++] = instruction.operand2;
+				
+				success = 1;
+				break;
+			case DIV:
+				if((word = parseWord(NULL, ",")) == NULL)
+				{
+					break;
+				}
+				
+				if((instruction.operand1 = convertToRegister(word)) == INVALID_REG)
+				{
+					break;
+				}
+				
+				if((word = parseWord(NULL, "\0")) == NULL)
+				{
+					break;
+				}
+				
+				if((instruction.operand2 = convertToRegister(word)) == INVALID_REG)
+				{
+					break;
+				}
+				
+				if(instruction.operand2 < 4 || instruction.operand1 > 3)
+				{
+					printf("\nError. Different register size\n");
+					printf("For instructions' list print \"HELP\"\n\n");
+					break;
 				}
 				
 				cpu->memory[cpu->lastInstruction++] = instruction.opcode;

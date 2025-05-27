@@ -51,9 +51,6 @@ void execute(CPU* cpu)
 		case DIV:
 			handleDiv(cpu);
 			break;
-		case PRINT:
-			handlePrint(cpu);
-			break;
 		default:
 			fprintf(stderr, "Unknown instruction\n");
 			return;

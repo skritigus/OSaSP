@@ -7,7 +7,7 @@
 typedef struct 
 {
 	Operation opcode;
-	int operand1;
+	Register operand1;
 	int operand2;
 } Instruction;
 

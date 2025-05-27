@@ -2,6 +2,7 @@
 #include "cpu.h"
 #include <stdio.h>
 #include <limits.h>
+#include <stdlib.h>
 #include <stdint.h>
 
 int32_t floatToFixed(double num) 
@@ -68,34 +69,48 @@ int addOp64(int64_t* num1, int64_t num2)
 	return ((g >> 63) & 1) ^ ((g >> 62) & 1);
 }
  
-int divOp(int dividend, int divisor) 
+int32_t divOp(int64_t dividend, int32_t divisor) 
 {    
-	int negative = 0;
-    if ((dividend >> 31) ^ (divisor >> 31)) 
-    {
-        negative = 1;
-	}
-	
-    unsigned int u_dividend = dividend == INT_MIN ? (unsigned int)INT_MAX + 1 : (unsigned int)(dividend < 0 ? -dividend : dividend);
-    unsigned int u_divisor = divisor == INT_MIN ? (unsigned int)INT_MAX + 1 : (unsigned int)(divisor < 0 ? -divisor : divisor);
+    int64_t reminder = ((dividend >> 63) & 1) == 0 ? dividend << FRACTIONAL_LEN : convertSign64(dividend)<< FRACTIONAL_LEN;
+    int64_t extendedDivisor = ((divisor >> 31) & 1) == 0 ? (int64_t)divisor << 32 : convertSign64((int64_t)divisor) << 32;
+    int64_t negExtendedDivisor = convertSign64(extendedDivisor);
 
-    unsigned int quotient = 0;
-    unsigned int temp = 0;
+    int32_t quotient = 0;
 
-    for (int i = 31; i >= 0; i--) 
+    for (int i = 31; i >= 0; --i) 
     {
-        if ((temp << 1 | ((u_dividend >> i) & 1)) >= u_divisor) 
+        if (((reminder >> 63) & 1) == 0) 
         {
-            temp = (temp << 1 | ((u_dividend >> i) & 1)) - u_divisor;
-            quotient |= (1U << i);
+            quotient |= (1 << i);
+            reminder <<= 1;
+            addOp64(&reminder, negExtendedDivisor);
         } 
         else 
         {
-            temp = (temp << 1) | ((u_dividend >> i) & 1);
+            reminder <<= 1;
+            addOp64(&reminder, extendedDivisor);
         }
     }
 
-    return negative ? -(int)quotient : (int)quotient;
+    addOp32(&quotient, quotient);
+    addOp32(&quotient, 1);
+    
+    if (reminder < 0)
+    {
+		if(quotient > 0)
+		{
+			addOp32(&quotient, convertSign32(1));
+		}
+	}
+
+	if(((dividend >> 63) & 1) ^ ((divisor >> 31) & 1))
+	{
+		return convertSign32(quotient);
+	}
+	else
+	{
+		return quotient;
+	}
 } 
  
 int64_t convertSign64(int64_t num)

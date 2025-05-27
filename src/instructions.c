@@ -97,17 +97,18 @@ void handleDiv(CPU* cpu)
 	Register reg1 = cpu->memory[cpu->currentInstruction++];
     Register reg2 = cpu->memory[cpu->currentInstruction++];
     
-    if (cpu->registers[reg2].value == 0) {
+    if (*getRegisterValue(cpu, reg2) == 0) 
+    {
         printf("Error. Division on zero\n");
         exit(EXIT_FAILURE);
     }
 
-    if (cpu->registers[reg1].value == INT_MIN && cpu->registers[reg2].value == -1)
+   /* if (cpu->registers[reg1 % 4].low == INT_MIN && cpu->registers[reg2 % 4].low == -1)
     {
         return;
-	}
+	}*/
 	
-	cpu->registers[RCX].value = divOp(cpu->registers[reg1].value, cpu->registers[reg2].value);
+	cpu->registers[RDX].low = divOp(cpu->registers[reg1].value, *getRegisterValue(cpu, reg2));
 }
 
 void handleClr(CPU* cpu) 
@@ -116,9 +117,8 @@ void handleClr(CPU* cpu)
 	*(int64_t*)getRegisterValue(cpu, reg) ^= *(int64_t*)getRegisterValue(cpu, reg);
 }
 
-void handlePrint(CPU* cpu) 
+void printReg(CPU* cpu, Register reg) 
 {
-    Register reg = cpu->memory[cpu->currentInstruction++];
     double num;
     if (reg < 4)
     {

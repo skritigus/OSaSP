@@ -21,7 +21,6 @@ typedef enum
 
 void handleHelp(CPU *cpu);
 void handleStat(CPU *cpu);
-void handlePrint(CPU *cpu);
 void handleClr(CPU* cpu);
 void handleMov(CPU *cpu);
 void handleMovr(CPU *cpu);
@@ -31,5 +30,6 @@ int handleMul(CPU *cpu);
 void handleDiv(CPU *cpu);
 
 void printNum(double num);
+void printReg(CPU *cpu, Register reg);
 
 #endif
