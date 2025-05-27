@@ -4,10 +4,9 @@
 #include "cli.h"
 
 // TODO:
-// 1. MOV REG
-// 2. MUL 32 ONLY
 // 3. PRINT NOT CPU 
 // 4. DIV
+// 5. PARSE END, STAT
 // 5. OTHER ADD
 // 6. OTHER ARIFMETIC
 

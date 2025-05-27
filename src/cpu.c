@@ -1,13 +1,14 @@
 #include "cpu.h"
 #include "instructions.h"
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 
 CPU initCpu()
 {
 	CPU cpu;
 	
-	memset(cpu.registers, 0, sizeof(int) * REGISTER_COUNT);
+	memset(cpu.registers, 0, sizeof(int64_t) * REGISTER_COUNT);
     cpu.lastInstruction = 0;
     cpu.currentInstruction = 0;
     memset(cpu.memory, 0, sizeof(int) * MEMORY_SIZE);
@@ -26,17 +27,26 @@ void execute(CPU* cpu)
 		case MOV:
 			handleMov(cpu);
 			break;
+		case MOVR:
+			handleMovr(cpu);
+			break;
 		case CLR:
 			handleClr(cpu);
 			break;
 		case ADD:
-			handleAdd(cpu);
+			if(handleAdd(cpu) == 1)
+			{
+				fprintf(stderr, "Overflow detected! The result is bigger than size of register\n");
+			}
 			break;
 		case SUB:
 			handleSub(cpu);
 			break;
 		case MUL:
-			handleMul(cpu);
+			if(handleMul(cpu) == 1)
+			{
+				fprintf(stderr, "Overflow detected! The multiplicand is bigger than size of register\n");
+			}
 			break;
 		case DIV:
 			handleDiv(cpu);

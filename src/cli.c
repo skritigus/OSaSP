@@ -1,5 +1,6 @@
 #include "cli.h"
 #include "instructions.h"
+#include "file.h"
 #include "operations.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +8,7 @@
 #include <ctype.h>
 #include <errno.h>
 
-#define MAX_LEN 256
+#define MAX_INPUT_LEN 256
 
 void trim(char* str) 
 {
@@ -49,6 +50,10 @@ char* parseWord(char* str, const char* delimeters)
 		printf("\nMissing operation or operand\n");
 		printf("For instructions' list print \"HELP\"\n\n");
 	}
+	else
+	{
+		trim(word);
+	}
 	
 	return word;
 }
@@ -68,10 +73,9 @@ double parseNum(char* str)
 
 void parseInstruction(CPU* cpu) 
 {
-    char input[MAX_LEN];
+    char input[MAX_INPUT_LEN];
     char* word;
     Instruction instruction = {0};
-    int temp;
     char success;
 
 	do
@@ -94,20 +98,18 @@ void parseInstruction(CPU* cpu)
 		switch(instruction.opcode)
 		{
 			case HELP:
-				if((word = parseWord(NULL, "\0")) == NULL)
+				if((word = parseWord(NULL, "\0")) != NULL)
 				{
 					break;
 				}
-				//printHelp();
-				success = 1;
+				loadHelp();
 				break;
 			case STAT:
-				if((word = parseWord(NULL, "\0")) == NULL)
+				if((word = parseWord(NULL, "\0")) != NULL)
 				{
 					break;
 				}
-				//printStat();
-				success = 1;
+				printStat(cpu);
 				break;
 			case END:
 				if((word = parseWord(NULL, "\0")) != NULL)
@@ -121,10 +123,14 @@ void parseInstruction(CPU* cpu)
 				{
 					break;
 				}
-				trim(word);
+				
+				if((instruction.operand1 = convertToRegister(word)) == INVALID_REG)
+				{
+					break;
+				}
 				
 				cpu->memory[cpu->lastInstruction++] = instruction.opcode;
-				cpu->memory[cpu->lastInstruction++] = convertToRegister(word);
+				cpu->memory[cpu->lastInstruction++] = instruction.operand1;
 				
 				success = 1;
 				break;
@@ -133,19 +139,16 @@ void parseInstruction(CPU* cpu)
 				{
 					break;
 				}
-				trim(word);
 				
-				if((temp = convertToRegister(word)) == INVALID_REG)
+				if((instruction.operand1 = convertToRegister(word)) == INVALID_REG)
 				{
 					break;
 				}
-				instruction.operand1 = temp;
 				
 				if((word = parseWord(NULL, "\0")) == NULL)
 				{
 					break;
 				}
-				trim(word);
 				
 				double value = parseNum(word);
 				if(errno != 0)
@@ -159,6 +162,7 @@ void parseInstruction(CPU* cpu)
 				
 				success = 1;
 				break;
+			case MOVR:
 			case ADD:
 			case SUB:
 			case MUL:
@@ -167,27 +171,37 @@ void parseInstruction(CPU* cpu)
 				{
 					break;
 				}
-				trim(word);
 				
-				if((temp = convertToRegister(word)) == INVALID_REG)
+				if((instruction.operand1 = convertToRegister(word)) == INVALID_REG)
 				{
 					break;
 				}
-				instruction.operand1 = temp;
 				
 				if((word = parseWord(NULL, "\0")) == NULL)
 				{
 					break;
 				}
-				trim(word);
 				
-				if((temp = convertToRegister(word)) == INVALID_REG)
+				if((instruction.operand2 = convertToRegister(word)) == INVALID_REG)
 				{
 					break;
 				}
+				
+				if((instruction.operand2 < 4 || instruction.operand1 < 4) && ((instruction.operand2 > 3 || instruction.operand1 > 3)))
+				{
+					printf("\nError. Differnt register size\n");
+					printf("For instructions' list print \"HELP\"\n\n");
+				}
+				
+				if(instruction.opcode == MUL && instruction.operand1 < 4)
+				{
+					printf("\nError. You can multiply only 32-bit registers\n");
+					printf("For instructions' list print \"HELP\"\n\n");
+				}
+				
 				cpu->memory[cpu->lastInstruction++] = instruction.opcode;
 				cpu->memory[cpu->lastInstruction++] = instruction.operand1;
-				cpu->memory[cpu->lastInstruction++] = temp;
+				cpu->memory[cpu->lastInstruction++] = instruction.operand2;
 				
 				success = 1;
 				break;
@@ -302,6 +316,10 @@ Operation convertToOperation(char* str)
     {
 		return MOV;
     }
+    else if (strcmp(str, "MOVR") == 0) 
+    {
+		return MOVR;
+    }
     else if (strcmp(str, "ADD") == 0) 
     {
 		return ADD;
@@ -325,4 +343,36 @@ Operation convertToOperation(char* str)
 	}
 
     return INVALID_OP;
+}
+
+void printStat(CPU* cpu)
+{
+	printf("Registers:\n");
+	printf("RAX: ");
+	printNum(fixed64ToFloat(cpu->registers[RAX].value));
+	printf("RAH: ");
+	printNum(fixed32ToFloat(cpu->registers[RAX].high));
+	printf("RAL: ");
+	printNum(fixed32ToFloat(cpu->registers[RAX].low));
+	
+	printf("RBX: ");
+	printNum(fixed64ToFloat(cpu->registers[RBX].value));
+	printf("RBH: ");
+	printNum(fixed32ToFloat(cpu->registers[RBX].high));
+	printf("RBL: ");
+	printNum(fixed32ToFloat(cpu->registers[RBX].low));
+	
+	printf("RCX: ");
+	printNum(fixed64ToFloat(cpu->registers[RCX].value));
+	printf("RCH: ");
+	printNum(fixed32ToFloat(cpu->registers[RCX].high));
+	printf("RCL: ");
+	printNum(fixed32ToFloat(cpu->registers[RCX].low));
+	
+	printf("RDX: ");
+	printNum(fixed64ToFloat(cpu->registers[RDX].value));
+	printf("RDH: ");
+	printNum(fixed32ToFloat(cpu->registers[RDX].high));
+	printf("RDL: ");
+	printNum(fixed32ToFloat(cpu->registers[RDX].low));
 }

@@ -8,6 +8,7 @@ typedef struct
 {
 	Operation opcode;
 	int operand1;
+	int operand2;
 } Instruction;
 
 void trim(char* str);

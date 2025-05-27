@@ -2,6 +2,8 @@
 #include "cli.h"
 #include <stdio.h>
 
+#define MAX_LEN 512
+
 void loadFile(CPU* cpu, const char* fileName) 
 {
     FILE* file = fopen(fileName, "r");
@@ -23,6 +25,25 @@ void loadFile(CPU* cpu, const char* fileName)
 		}
 
         parseInstruction(cpu);
+    }
+
+    fclose(file);
+}
+
+void loadHelp() 
+{
+    FILE* file = fopen("help.txt", "r");
+    if (!file) 
+    {
+        perror("Failed to open \"help.txt\"");
+        return;
+    }
+
+    char line[MAX_LEN];
+
+    while (fgets(line, sizeof(line), file)) 
+    {
+        fprintf(stdout, "%s", line);
     }
 
     fclose(file);

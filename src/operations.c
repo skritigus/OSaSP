@@ -9,7 +9,7 @@ int32_t floatToFixed(double num)
     return (int32_t)(num * (1 << FRACTIONAL_LEN)); 
 }
 
-float fixedToFloat(int32_t num) 
+float fixed32ToFloat(int32_t num) 
 {	
 	return (float)num / (1 << FRACTIONAL_LEN);
 }
@@ -19,7 +19,7 @@ double fixed64ToFloat(int64_t num)
 	return (double)num / (1 << FRACTIONAL_LEN);
 }
 
-void addOp32(int32_t* num1, int32_t num2) 
+int addOp32(int32_t* num1, int32_t num2) 
 {    
 	int g = *num1 & num2;     
 	int p = *num1 ^= num2;      
@@ -39,9 +39,10 @@ void addOp32(int32_t* num1, int32_t num2)
 	g |= p & g << 16;
 		
 	*num1 ^= (g << 1);
+	return ((g >> 31) & 1) ^ ((g >> 30) & 1);
 }
 
-void addOp64(int64_t* num1, int64_t num2) 
+int addOp64(int64_t* num1, int64_t num2) 
 {    
 	int64_t g = *num1 & num2;     
 	int64_t p = *num1 ^= num2;      
@@ -64,6 +65,7 @@ void addOp64(int64_t* num1, int64_t num2)
 	g |= p & g << 32;
 		
 	*num1 ^= (g << 1);
+	return ((g >> 63) & 1) ^ ((g >> 62) & 1);
 }
  
 int divOp(int dividend, int divisor) 
@@ -96,8 +98,16 @@ int divOp(int dividend, int divisor)
     return negative ? -(int)quotient : (int)quotient;
 } 
  
-void convertSign(int64_t* num)
+int64_t convertSign64(int64_t num)
 {
-	*num = ~(*num);
-	addOp64(num, 1);
+	num = ~num;
+	addOp64(&num, 1);
+	return num;
+}
+
+int32_t convertSign32(int32_t num)
+{
+	num = ~num;
+	addOp32(&num, 1);
+	return num;
 }

@@ -12,6 +12,7 @@ typedef enum
     PRINT,
     CLR,
     MOV,
+    MOVR,
     ADD,
     SUB,
     MUL,
@@ -23,9 +24,12 @@ void handleStat(CPU *cpu);
 void handlePrint(CPU *cpu);
 void handleClr(CPU* cpu);
 void handleMov(CPU *cpu);
-void handleAdd(CPU *cpu);
+void handleMovr(CPU *cpu);
+int handleAdd(CPU *cpu);
 void handleSub(CPU *cpu);
-void handleMul(CPU *cpu);
+int handleMul(CPU *cpu);
 void handleDiv(CPU *cpu);
+
+void printNum(double num);
 
 #endif

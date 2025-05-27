@@ -17,5 +17,6 @@ typedef struct CPU
 
 CPU initCpu();
 void execute(CPU* cpu);
+void printStat(CPU* cpu);
 
 #endif

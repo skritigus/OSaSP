@@ -3,8 +3,7 @@
 
 #include "cpu.h"
 
-#define MAX_LEN 512
-
 void loadFile(CPU* cpu,  const char* fileName);
+void loadHelp();
 
 #endif
