@@ -3,12 +3,6 @@
 #include "file.h"
 #include "cli.h"
 
-// TODO:
-// 4. DIV
-// 5. PARSE END, STAT
-// 5. OTHER ADD
-// 6. OTHER ARIFMETIC
-
 int main(int argc, char* argv[]) 
 {
     CPU cpu = initCpu();
@@ -18,8 +12,11 @@ int main(int argc, char* argv[])
 		case 1:
 			while(1)
 			{
-				parseInstruction(&cpu);
-				execute(&cpu);
+				int result = parseInstruction(&cpu, NULL, 0);
+				if(result == 0 || result == 1)
+				{
+					execute(&cpu);
+				}	
 			}
 			break;
 		case 2:

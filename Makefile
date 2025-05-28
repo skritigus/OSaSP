@@ -22,13 +22,16 @@ objects =  $(OUT_DIR)/main.o $(OUT_DIR)/cpu.o $(OUT_DIR)/instructions.o $(OUT_DI
 
 prog = $(OUT_DIR)/curse
 
-all: $(prog) 
+all: $(prog) help.txt
 
 $(prog) : $(objects) 
 	$(CC) $(CFLAGS) $(objects) -o $@
 
 $(OUT_DIR)/%.o : %.c
 	$(CC) -c $(CFLAGS) $^ -o $@
+
+help.txt: generate_help.sh
+	./generate_help.sh $(MODE)
 
 .PHONY: clean 
 clean:

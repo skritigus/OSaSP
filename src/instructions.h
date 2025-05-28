@@ -1,7 +1,10 @@
 #ifndef INSTRUCTIONS_H
 #define INSTRUCTIONS_H
 
-#include "cpu.h"
+#include "register.h"
+
+struct CPU;
+typedef struct CPU CPU;
 
 typedef enum 
 {
@@ -11,6 +14,7 @@ typedef enum
     END,
     PRINT,
     CLR,
+    CHS,
     MOV,
     MOVR,
     ADD,
@@ -19,17 +23,25 @@ typedef enum
     DIV
 } Operation;
 
-void handleHelp(CPU *cpu);
-void handleStat(CPU *cpu);
+typedef struct 
+{
+	Operation opcode;
+	Register operand1;
+	int operand2;
+} Instruction;
+
+void handleHelp(CPU* cpu);
+void handleStat(CPU* cpu);
 void handleClr(CPU* cpu);
-void handleMov(CPU *cpu);
-void handleMovr(CPU *cpu);
-int handleAdd(CPU *cpu);
-void handleSub(CPU *cpu);
-int handleMul(CPU *cpu);
-void handleDiv(CPU *cpu);
+void handleMov(CPU* cpu);
+void handleMovr(CPU* cpu);
+int handleChs(CPU* cpu);
+int handleAdd(CPU* cpu);
+int handleSub(CPU* cpu);
+int handleMul(CPU* cpu);
+int handleDiv(CPU* cpu);
 
 void printNum(double num);
-void printReg(CPU *cpu, Register reg);
+void printReg(CPU* cpu);
 
 #endif

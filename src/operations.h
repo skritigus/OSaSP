@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define FRACTIONAL_LEN 14
+#define FRACTIONAL_LEN 11
 
 int32_t floatToFixed(double num);
 float fixed32ToFloat(int32_t num);
@@ -11,7 +11,6 @@ double fixed64ToFloat(int64_t num);
 
 int addOp32(int32_t* num1, int32_t num2);
 int addOp64(int64_t* num1, int64_t num2);
-int32_t divOp(int64_t dividend, int32_t divisor); 
 int64_t convertSign64(int64_t num);
 int32_t convertSign32(int32_t num);
 

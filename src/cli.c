@@ -12,6 +12,11 @@
 
 void trim(char* str) 
 {
+	if(str == NULL)
+	{
+		return;
+	}
+	
 	char* start = str;
 	
     while (isspace(*str)) 
@@ -42,12 +47,28 @@ void deleteEnter(char* str)
 	}
 }
 
-char* parseWord(char* str, const char* delimeters)
+void deleteComment(char* str)
 {
-	char* word = strtok(str, delimeters);
-	if (word == NULL) 
+	char* commentPos = strchr(str, ';');
+	if (commentPos != NULL) 
 	{
-		printf("\nMissing operation or operand\n");
+		*commentPos = '\0';
+	}
+}
+
+char* parseWord(char* str, const char* delimeters, char required, int lineNumber)
+{	
+	char* word = strtok(str, delimeters);
+	char result = required == 0 ? word == NULL : word != NULL;
+	
+	if (result == 0) 
+	{
+		printf("\n");
+		if(lineNumber != 0)
+		{
+			printf("Line %d: ", lineNumber);
+		}
+		printf("Wrong instruction\n");
 		printf("For instructions' list print \"HELP\"\n\n");
 	}
 	else
@@ -58,207 +79,224 @@ char* parseWord(char* str, const char* delimeters)
 	return word;
 }
 
-double parseNum(char* str)
+double parseNum(char* str, int lineNumber)
 {
 	char* numEnd;
 	double value = strtod(str, &numEnd);
 	if(*numEnd != 0)
 	{
-		printf("\nThe second operand of operation must be number\n");
+		printf("\n");
+		if(lineNumber != 0)
+		{
+			printf("Line %d: ", lineNumber);
+		}
+		printf("The second operand of operation must be number\n");
 		printf("For instructions' list print \"HELP\"\n\n");
 	}
 	
 	return value;
 }
 
-void parseInstruction(CPU* cpu) 
+int parseInstruction(CPU* cpu, FILE* file, int lineNumber) 
 {
     char input[MAX_INPUT_LEN];
     char* word;
     Instruction instruction = {0};
-    char success;
 
-	do
+	if (fgets(input, sizeof(input), file == NULL ? stdin : file) == NULL) 
 	{
-		success = 0;
-		
-		if (fgets(input, sizeof(input), stdin) == NULL) 
+		if(errno != 0)
 		{
 			perror("Error in getting instruction");
 			exit(EXIT_FAILURE);
 		}
-		deleteEnter(input);
+		else
+		{
+			return -2;
+		} 
+	}
+	 
+	deleteEnter(input);
+	deleteComment(input);
 
-		if((word = parseWord(input, " ")) == NULL)
-		{
-			continue;
-		}
-		
-		instruction.opcode = convertToOperation(word);
-		switch(instruction.opcode)
-		{
-			case HELP:
-				if((word = parseWord(NULL, "\0")) != NULL)
-				{
-					break;
-				}
-				loadHelp();
-				break;
-			case STAT:
-				if((word = parseWord(NULL, "\0")) != NULL)
-				{
-					break;
-				}
-				printStat(cpu);
-				break;
-			case END:
-				if((word = parseWord(NULL, "\0")) != NULL)
-				{
-					break;
-				}
-				exit(EXIT_SUCCESS);
-			case PRINT:
-				if((word = parseWord(NULL, "\0")) == NULL)
-				{
-					break;
-				}
-				
-				if((instruction.operand1 = convertToRegister(word)) == INVALID_REG)
-				{
-					break;
-				}
-				printReg(cpu, instruction.operand1);
-				break;
-			case CLR:
-				if((word = parseWord(NULL, "\0")) == NULL)
-				{
-					break;
-				}
-				
-				if((instruction.operand1 = convertToRegister(word)) == INVALID_REG)
-				{
-					break;
-				}
-				
-				cpu->memory[cpu->lastInstruction++] = instruction.opcode;
-				cpu->memory[cpu->lastInstruction++] = instruction.operand1;
-				
-				success = 1;
-				break;
-			case MOV:
-				if((word = parseWord(NULL, ",")) == NULL)
-				{
-					break;
-				}
-				
-				if((instruction.operand1 = convertToRegister(word)) == INVALID_REG)
-				{
-					break;
-				}
-				
-				if((word = parseWord(NULL, "\0")) == NULL)
-				{
-					break;
-				}
-				
-				double value = parseNum(word);
-				if(errno != 0)
-				{
-					break;
-				} 
-				
-				cpu->memory[cpu->lastInstruction++] = instruction.opcode;
-				cpu->memory[cpu->lastInstruction++] = instruction.operand1;
-				cpu->memory[cpu->lastInstruction++] = floatToFixed(value);
-				
-				success = 1;
-				break;
-			case MOVR:
-			case ADD:
-			case SUB:
-			case MUL:
-				if((word = parseWord(NULL, ",")) == NULL)
-				{
-					break;
-				}
-				
-				if((instruction.operand1 = convertToRegister(word)) == INVALID_REG)
-				{
-					break;
-				}
-				
-				if((word = parseWord(NULL, "\0")) == NULL)
-				{
-					break;
-				}
-				
-				if((instruction.operand2 = convertToRegister(word)) == INVALID_REG)
-				{
-					break;
-				}
-				
-				if((instruction.operand2 < 4 || instruction.operand1 < 4) && ((instruction.operand2 > 3 || instruction.operand1 > 3)))
-				{
-					printf("\nError. Different register size\n");
-					printf("For instructions' list print \"HELP\"\n\n");
-					break;
-				}
-				
-				if(instruction.opcode == MUL && instruction.operand1 < 4)
-				{
-					printf("\nError. You can multiply only 32-bit registers\n");
-					printf("For instructions' list print \"HELP\"\n\n");
-					break;
-				}
-				
-				cpu->memory[cpu->lastInstruction++] = instruction.opcode;
-				cpu->memory[cpu->lastInstruction++] = instruction.operand1;
-				cpu->memory[cpu->lastInstruction++] = instruction.operand2;
-				
-				success = 1;
-				break;
-			case DIV:
-				if((word = parseWord(NULL, ",")) == NULL)
-				{
-					break;
-				}
-				
-				if((instruction.operand1 = convertToRegister(word)) == INVALID_REG)
-				{
-					break;
-				}
-				
-				if((word = parseWord(NULL, "\0")) == NULL)
-				{
-					break;
-				}
-				
-				if((instruction.operand2 = convertToRegister(word)) == INVALID_REG)
-				{
-					break;
-				}
-				
-				if(instruction.operand2 < 4 || instruction.operand1 > 3)
-				{
-					printf("\nError. Different register size\n");
-					printf("For instructions' list print \"HELP\"\n\n");
-					break;
-				}
-				
-				cpu->memory[cpu->lastInstruction++] = instruction.opcode;
-				cpu->memory[cpu->lastInstruction++] = instruction.operand1;
-				cpu->memory[cpu->lastInstruction++] = instruction.operand2;
-				
-				success = 1;
-				break;
-			default:
-				break;
-		}	
-	} while(success == 0);
+	trim(input);
+	if (strlen(input) == 0)
+	{
+		return 2;
+	}
 	
+	if((word = parseWord(input, " ", 1, lineNumber)) == NULL)
+	{
+		return -1;
+	}
+	
+	instruction.opcode = convertToOperation(word, lineNumber);
+	switch(instruction.opcode)
+	{
+		case HELP:
+		case STAT:
+			if((word = parseWord(NULL, "\0", 0, lineNumber)) != NULL)
+			{
+				return -1;
+			}
+			writeToMemory(cpu, instruction, 1, file);	
+			break;
+		case END:
+			if((word = parseWord(NULL, "\0", 0, lineNumber)) != NULL)
+			{
+				return -1;
+			}
+			
+			if(writeToMemory(cpu, instruction, 1, file) == -1)
+			{
+				return -1;
+			}	
+			return 1;
+		case PRINT:
+		case CLR:
+		case CHS:
+			if((word = parseWord(NULL, "\0", 1, lineNumber)) == NULL)
+			{
+				return -1;
+			}
+			
+			if((instruction.operand1 = convertToRegister(word, lineNumber)) == INVALID_REG)
+			{
+				break;
+			}
+			
+			if(writeToMemory(cpu, instruction, 2, file) == -1)
+			{
+				return -1;
+			}
+			break;
+		case MOV:
+			if((word = parseWord(NULL, ",", 1, lineNumber)) == NULL)
+			{
+				return -1;
+			}
+			
+			if((instruction.operand1 = convertToRegister(word, lineNumber)) == INVALID_REG)
+			{
+				return -1;
+			}
+			
+			if((word = parseWord(NULL, "\0", 1, lineNumber)) == NULL)
+			{
+				return -1;
+			}
+			
+			double value = parseNum(word, lineNumber);
+			if(errno != 0)
+			{
+				return -1;
+			} 
+			
+			instruction.operand2 = floatToFixed(value);
+			if(writeToMemory(cpu, instruction, 3, file) == -1)
+			{
+				return -1;
+			}
+			break;
+		case MOVR:
+		case ADD:
+		case SUB:
+		case MUL:
+			if((word = parseWord(NULL, ",", 1, lineNumber)) == NULL)
+			{
+				return -1;
+			}
+			
+			if((instruction.operand1 = convertToRegister(word, lineNumber)) == INVALID_REG)
+			{
+				return -1;
+			}
+			
+			if((word = parseWord(NULL, "\0", 1, lineNumber)) == NULL)
+			{
+				return -1;
+			}
+			
+			if((instruction.operand2 = convertToRegister(word, lineNumber)) == INVALID_REG)
+			{
+				return -1;
+			}
+			
+			if((instruction.operand2 < 4 || instruction.operand1 < 4) && ((instruction.operand2 > 3 || instruction.operand1 > 3)))
+			{
+				printf("\n");
+				if(lineNumber != 0)
+				{
+					printf("Line %d: ", lineNumber);
+				}
+				printf("Error. Different register size\n");
+				printf("For instructions' list print \"HELP\"\n\n");
+				return -1;
+			}
+			
+			if(instruction.opcode == MUL && instruction.operand1 < 4)
+			{
+				printf("\n");
+				if(lineNumber != 0)
+				{
+					printf("Line %d: ", lineNumber);
+				}
+				printf("Error. You can multiply only 32-bit registers\n");
+				printf("For instructions' list print \"HELP\"\n\n");
+				return -1;
+			}
+			
+			if(writeToMemory(cpu, instruction, 3, file) == -1)
+			{
+				return -1;
+			}
+			break;
+		case DIV:
+			if((word = parseWord(NULL, ",", 1, lineNumber)) == NULL)
+			{
+				return -1;
+			}
+			
+			if((instruction.operand1 = convertToRegister(word, lineNumber)) == INVALID_REG)
+			{
+				return -1;
+			}
+			
+			if((word = parseWord(NULL, "\0", 1, lineNumber)) == NULL)
+			{
+				return -1;
+			}
+			
+			if((instruction.operand2 = convertToRegister(word, lineNumber)) == INVALID_REG)
+			{
+				return -1;
+			}
+			
+			if(instruction.operand2 < 4 || instruction.operand1 > 3)
+			{
+				printf("\n");
+				if(lineNumber != 0)
+				{
+					printf("Line %d: ", lineNumber);
+				}
+				printf("Error. Different register size\n");
+				printf("For instructions' list print \"HELP\"\n\n");
+				break;
+			}
+			
+			if(writeToMemory(cpu, instruction, 3, file) == -1)
+			{
+				return -1;
+			}
+			break;
+		default:
+			return -1;
+	}	
+	
+	return 0;
 }
 
-Register convertToRegister(char* str)
+Register convertToRegister(char* str, int lineNumber)
 {
 	char* start = str;
 	
@@ -319,6 +357,11 @@ Register convertToRegister(char* str)
     }
     else
     {
+		printf("\n");
+		if(lineNumber != 0)
+		{
+			printf("Line %d: ", lineNumber);
+		}
 		printf("Unknown register \"%s\"\n", str);
 		printf("For registers' list print \"HELP\"\n\n");
 	}
@@ -326,7 +369,7 @@ Register convertToRegister(char* str)
     return INVALID_REG;
 }
 
-Operation convertToOperation(char* str)
+Operation convertToOperation(char* str, int lineNumber)
 {
 	char* start = str;
 	
@@ -358,6 +401,10 @@ Operation convertToOperation(char* str)
     {
 		return CLR;
     }
+    else if (strcmp(str, "CHS") == 0) 
+    {
+		return CHS;
+    }
     else if (strcmp(str, "MOV") == 0) 
     {
 		return MOV;
@@ -384,6 +431,11 @@ Operation convertToOperation(char* str)
     }
     else
     {
+		printf("\n");
+		if(lineNumber != 0)
+		{
+			printf("Line %d: ", lineNumber);
+		}
 		printf("Unknown operation \"%s\"\n", str);
 		printf("For instructions' list print \"HELP\"\n\n");
 	}
@@ -393,7 +445,7 @@ Operation convertToOperation(char* str)
 
 void printStat(CPU* cpu)
 {
-	printf("Registers:\n");
+	printf("\nRegisters:\n");
 	printf("RAX: ");
 	printNum(fixed64ToFloat(cpu->registers[RAX].value));
 	printf("RAH: ");
@@ -421,4 +473,5 @@ void printStat(CPU* cpu)
 	printNum(fixed32ToFloat(cpu->registers[RDX].high));
 	printf("RDL: ");
 	printNum(fixed32ToFloat(cpu->registers[RDX].low));
+	printf("\n");
 }

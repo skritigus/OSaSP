@@ -3,21 +3,16 @@
 
 #include "cpu.h"
 #include "instructions.h"
-
-typedef struct 
-{
-	Operation opcode;
-	Register operand1;
-	int operand2;
-} Instruction;
+#include <stdio.h>
 
 void trim(char* str);
 void deleteEnter(char* str);
-char* parseWord(char* str, const char* delimeters);
-double parseNum(char* str);
+void deleteComment(char* str);
+char* parseWord(char* str, const char* delimeters, char required, int lineNumber);
+double parseNum(char* str, int lineNumber);
 
-void parseInstruction(CPU* cpu);
-Register convertToRegister(char* str);
-Operation convertToOperation(char* str);
+int parseInstruction(CPU* cpu, FILE* file, int lineNumber);
+Register convertToRegister(char* str, int lineNumber);
+Operation convertToOperation(char* str, int lineNumber);
 
 #endif
