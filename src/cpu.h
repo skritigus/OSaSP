@@ -1,9 +1,8 @@
 #ifndef CPU_H
 #define CPU_H
 
-#include <stdint.h>
 #include "register.h"
-#include "instructions.h"
+#include "instruction.h"
 
 #define REGISTER_COUNT 4
 #define MEMORY_SIZE 256
@@ -18,7 +17,6 @@ typedef struct CPU
 
 CPU initCpu();
 void execute(CPU* cpu);
-void printStat(CPU* cpu);
 
 int writeToMemory(CPU* cpu, Instruction instruction, int opCount, void* fileOpened);
 

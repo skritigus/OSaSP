@@ -1,8 +1,7 @@
-#ifndef CLI_H
-#define CLI_H
+#ifndef PARSER_H
+#define PARSER_H
 
 #include "cpu.h"
-#include "instructions.h"
 #include <stdio.h>
 
 void trim(char* str);

@@ -8,31 +8,32 @@ typedef struct CPU CPU;
 
 typedef enum 
 {
-	INVALID_REG = -1,
+    INVALID_REG = -1,
     RAX,
     RBX,
     RCX,
-	RDX,
-	RAH,
+    RDX,
+    RAH,
     RBH,
     RCH,
-	RDH,
-	RAL,
+    RDH,
+    RAL,
     RBL,
     RCL,
-	RDL	
+    RDL    
 } Register;
+
+typedef struct
+{
+	int32_t low;
+	int32_t high;
+} RegisterParts;
 
 typedef union 
 {
-    struct
-    {
-        int32_t low;
-        int32_t high;
-    };
-    
+    RegisterParts parts;
     int64_t value;
-} Reg64;
+} Register64;
 
 int32_t* getRegisterValue(CPU* cpu, Register reg);
 void setRegisterValue(CPU* cpu, Register reg, int64_t value);

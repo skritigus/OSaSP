@@ -15,12 +15,12 @@ int32_t* getRegisterValue(CPU* cpu, Register reg)
         case RBL: 
         case RCL:
         case RDL:
-            return &cpu->registers[reg % 4].low;
+            return &cpu->registers[reg % 4].parts.low;
         case RAH: 
         case RBH: 
         case RCH:
         case RDH:
-            return &cpu->registers[reg % 4].high;
+            return &cpu->registers[reg % 4].parts.high;
         default:
             return NULL;
     }
@@ -42,13 +42,13 @@ void setRegisterValue(CPU* cpu, Register reg, int64_t value)
         case RBL: 
         case RCL:
         case RDL:
-            cpu->registers[reg % 4].low = (int32_t)value;
+            cpu->registers[reg % 4].parts.low = (int32_t)value;
             break;
-		case RAH: 
+        case RAH: 
         case RBH: 
         case RCH:
         case RDH:
-            cpu->registers[reg % 4].high = (int32_t)value;
+            cpu->registers[reg % 4].parts.high = (int32_t)value;
             break;
         default:
             break;

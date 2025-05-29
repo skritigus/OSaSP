@@ -1,5 +1,5 @@
-#include "file.h"
-#include "cli.h"
+#include "file_handler.h"
+#include "parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -14,25 +14,25 @@ void loadFile(CPU* cpu, const char* fileName)
         exit(EXIT_FAILURE);
     }
 
-	int result;
-	int lineNumber = 1;
-	
+    int result;
+    int lineNumber = 1;
+    
     do
     {
-		result = parseInstruction(cpu, file, lineNumber);		
-		++lineNumber;
-	} while (result == 0 || result == 2);
+        result = parseInstruction(cpu, file, lineNumber);        
+        ++lineNumber;
+    } while (result == 0 || result == 2);
 
     fclose(file);
     
     if(result != 1)
     {
-		if(result == -2)
-		{
-			fprintf(stderr, "Error. Missing \"END\" instruction in the end of file\n");	
-		}
-		exit(EXIT_FAILURE);
-	}
+        if(result == -2)
+        {
+            fprintf(stderr, "Error. Missing \"END\" instruction in the end of file\n");    
+        }
+        exit(EXIT_FAILURE);
+    }
 }
 
 void loadHelp() 
