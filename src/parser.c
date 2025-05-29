@@ -279,7 +279,7 @@ int parseInstruction(CPU* cpu, FILE* file, int lineNumber)
                 }
                 printf("Error. Different register size\n");
                 printf("For instructions' list print \"HELP\"\n\n");
-                break;
+                return -1;
             }
             
             if(writeToMemory(cpu, instruction, 3, file) == -1)

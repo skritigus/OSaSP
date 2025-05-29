@@ -34,7 +34,7 @@ typedef struct
 } Instruction;
 
 int32_t floatToFixed(double num);
-float fixed32ToFloat(int32_t num);
+double fixed32ToFloat(int32_t num);
 double fixed64ToFloat(int64_t num);
 
 int addOp32(int32_t* num1, int32_t num2);

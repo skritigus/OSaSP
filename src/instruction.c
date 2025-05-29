@@ -9,9 +9,9 @@ int32_t floatToFixed(double num)
     return (int32_t)(num * (1 << FRACTIONAL_LEN)); 
 }
 
-float fixed32ToFloat(int32_t num) 
+double fixed32ToFloat(int32_t num) 
 {    
-    return (float)num / (1 << FRACTIONAL_LEN);
+    return (double)num / (1 << FRACTIONAL_LEN);
 }
 
 double fixed64ToFloat(int64_t num) 
@@ -235,12 +235,9 @@ int handleDiv(CPU* cpu)
     quotient <<= 1;
     addOp32(&quotient, 1);
     
-    if (reminder < 0)
+    if (reminder < 0 && quotient > 0)
     {
-        if(quotient > 0)
-        {
-            addOp32(&quotient, convertSign32(1));
-        }
+        addOp32(&quotient, convertSign32(1));
     }
 
     if(((cpu->registers[reg1].value >> 63) & 1) ^ ((*getRegisterValue(cpu, reg2) >> 31) & 1))
