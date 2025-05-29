@@ -18,9 +18,9 @@ ifeq ($(MODE), release)
 endif
 
 
-objects =  $(OUT_DIR)/main.o $(OUT_DIR)/cpu.o $(OUT_DIR)/instructions.o $(OUT_DIR)/cli.o $(OUT_DIR)/operations.o $(OUT_DIR)/file.o $(OUT_DIR)/register.o
+objects =  $(OUT_DIR)/emulator.o $(OUT_DIR)/cpu.o $(OUT_DIR)/instruction.o $(OUT_DIR)/parser.o $(OUT_DIR)/file_handler.o $(OUT_DIR)/register.o
 
-prog = $(OUT_DIR)/curse
+prog = $(OUT_DIR)/emulator
 
 all: $(prog) help.txt
 

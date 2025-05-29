@@ -9,7 +9,7 @@
 
 typedef struct CPU
 {
-    Reg64 registers[REGISTER_COUNT];
+    Register64 registers[REGISTER_COUNT];
     int memory[MEMORY_SIZE];
     int lastInstruction;
     int currentInstruction;
